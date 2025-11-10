@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تبدیل متن به نمودار BPMN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script src="https://unpkg.com/bpmn-js@11.3.0/dist/bpmn-viewer.development.js"></script>
+  </head>
+  <body dir="rtl">
+    <header>
+      <h1>تبدیل متن به نمودار فرایندی BPMN</h1>
+      <p>
+        توضیح فرایند را به صورت مرحله‌به‌مرحله وارد کنید؛ برنامه به صورت خودکار
+        نمودار خطی BPMN را ایجاد می‌کند.
+      </p>
+    </header>
+    <main>
+      <section class="form">
+        <label for="processText">شرح فرایند</label>
+        <textarea
+          id="processText"
+          rows="6"
+          placeholder="مثال: مشتری سفارش را ثبت می‌کند. واحد فروش سفارش را بررسی می‌کند. فاکتور صادر می‌شود."
+        ></textarea>
+        <button id="convertBtn">تبدیل به نمودار</button>
+        <p id="error" class="error" role="alert"></p>
+      </section>
+      <section class="viewer">
+        <div id="canvas"></div>
+      </section>
+    </main>
+    <footer>
+      <small>
+        این نسخه آزمایشی است و ترجمه را به صورت خطی انجام می‌دهد. برای سناریوهای
+        پیچیده لازم است الگوریتم تحلیل متن توسعه یابد.
+      </small>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>
