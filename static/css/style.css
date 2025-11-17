@@ -1,175 +1,225 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
-    background: #f7f8fb;
-    color: #1f2933;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  margin: 0;
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  background: #f7f8fb;
+  color: #1f2933;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 button,
 input,
 textarea,
 select {
-    font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
 }
 
 header,
 footer {
-    background: #1f4b99;
-    color: #fff;
-    padding: 1.5rem 2rem;
-    text-align: center;
+  background: #1f4b99;
+  color: #fff;
+  padding: 1.5rem 2rem;
+  text-align: center;
 }
 
 header h1 {
-    margin: 0 0 0.5rem;
-    font-size: 1.6rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
 }
 
 main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: minmax(280px, 420px) 1fr;
-    gap: 2rem;
-    padding: 2rem;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) 1fr;
+  gap: 2rem;
+  padding: 2rem;
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    background: #fff;
-    border-radius: 20px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
 }
 
 .form textarea {
-    resize: vertical;
-    min-height: 160px;
-    border: 1px solid #dce3ef;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    padding: 0.8rem;
-    line-height: 1.6;
+  resize: vertical;
+  min-height: 160px;
+  border: 1px solid #dce3ef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  padding: 0.8rem;
+  line-height: 1.6;
 }
 
 .form button {
-    background: #1f4b99;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.8rem 1.2rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: #1f4b99;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .form button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .form button:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 20px rgba(31, 73, 153, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(31, 73, 153, 0.2);
 }
 
 .error {
-    color: #c0392b;
-    min-height: 1.2rem;
+  color: #c0392b;
+  min-height: 1.2rem;
 }
 
 .viewer {
-    background: #fff;
-    border-radius: 20px;
-    padding: 1rem;
-    box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
-    min-height: 400px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
+  min-height: 400px;
 }
 
 #canvas {
-    width: 100%;
-    height: 100%;
-    min-height: 380px;
-    border: 1px dashed #d1d9ec;
-    border-radius: 8px;
-    background: #f5f7fb;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  border: 1px dashed #d1d9ec;
+  border-radius: 8px;
+  background: #f5f7fb;
 }
 
 .border-beam {
-    position: relative;
-    border-radius: var(--beam-radius, 60px);
-    isolation: isolate;
+  position: relative;
+  border-radius: var(--beam-radius, 60px);
+  isolation: isolate;
 }
 
 .border-beam::before {
-    /* غیرفعال: از SVG برای حرکت دور سکشن استفاده می‌کنیم */
-    content: none;
+  /* غیرفعال: از SVG برای حرکت دور سکشن استفاده می‌کنیم */
+  content: none;
 }
 
 /* لایه‌ی SVG که دور سکشن قرار می‌گیرد */
 .beam-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: visible;
-    border-radius: inherit;
-    filter:
-        drop-shadow(0 0 calc(var(--beam-glow, 4) * 1px) var(--beam-color-from, #f97316)) drop-shadow(0 0 calc(var(--beam-glow, 4) * 2px) var(--beam-color-to, #ec4899));
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  border-radius: inherit;
+  filter: drop-shadow(
+      0 0 calc(var(--beam-glow, 4) * 1px) var(--beam-color-from, #f97316)
+    )
+    drop-shadow(
+      0 0 calc(var(--beam-glow, 4) * 2px) var(--beam-color-to, #ec4899)
+    );
 }
 
 /* انیمیشن حرکت پرتو در پیرامون مستطیل */
 @keyframes beam-dash {
-    to {
-        stroke-dashoffset: -1000;
-    }
+  to {
+    stroke-dashoffset: -1000;
+  }
 }
 
 .border-beam--animated .beam-svg rect {
-    animation: beam-dash calc(var(--beam-duration, 4s) / var(--beam-speed, 1.5)) linear infinite;
+  animation: beam-dash calc(var(--beam-duration, 4s) / var(--beam-speed, 1.5))
+    linear infinite;
 }
 
 .bjs-powered-by {
-    display: none !important;
+  display: none !important;
 }
 
 .djs-container,
 .djs-label,
 .djs-visual text,
 .djs-direct-editing-content {
-    font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif !important;
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif !important;
 }
 
 .djs-label {
-    white-space: normal !important;
-    text-align: center;
-    line-height: 1.3;
+  white-space: normal !important;
+  text-align: center;
+  line-height: 1.3;
 }
 
 .djs-visual text {
-    white-space: pre-wrap;
+  white-space: pre-wrap;
+}
+
+/* BPMN Colors */
+/* Tasks */
+g.djs-element[data-element-id^="Activity_"] .djs-visual > rect {
+  fill: #eef2ff !important; /* indigo-50 */
+  stroke: #4338ca !important; /* indigo-700 */
+  stroke-width: 2px !important;
+}
+
+/* Start Event */
+g.djs-element[data-element-id^="StartEvent"] .djs-visual > circle {
+  fill: #d1fae5 !important; /* emerald-100 */
+  stroke: #10b981 !important; /* emerald-500 */
+  stroke-width: 2px !important;
+}
+
+/* End Event */
+g.djs-element[data-element-id^="EndEvent"] .djs-visual > circle {
+  fill: #fee2e2 !important; /* red-100 */
+  stroke: #ef4444 !important; /* red-500 */
+  stroke-width: 3px !important;
+}
+
+/* Gateways (exclusive) */
+g.djs-element[data-element-id^="Gateway_"] .djs-visual > path,
+g.djs-element[data-element-id^="Gateway_"] .djs-visual > polygon {
+  fill: #fffbeb !important; /* amber-50 */
+  stroke: #f59e0b !important; /* amber-500 */
+  stroke-width: 2px !important;
+}
+/* Inner marker (e.g., X of exclusive) */
+g.djs-element[data-element-id^="Gateway_"] .djs-visual path:nth-child(2) {
+  stroke: #f59e0b !important;
+}
+
+/* Sequence Flows and Arrowheads */
+g.djs-element.djs-connection .djs-visual path {
+  stroke: #64748b !important; /* slate-500 */
+  fill: #64748b !important;
+  stroke-width: 2px !important;
+}
+
+/* Labels */
+.djs-label text {
+  fill: #1f2937 !important; /* gray-800 */
 }
 
 @media (max-width: 960px) {
-    main {
-        grid-template-columns: 1fr;
-        padding: 1.5rem;
-    }
+  main {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 640px) {
-
-    header,
-    footer {
-        padding: 1rem;
-    }
+  header,
+  footer {
+    padding: 1rem;
+  }
 }
