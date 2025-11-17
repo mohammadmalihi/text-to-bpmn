@@ -123,12 +123,7 @@ main {
   pointer-events: none;
   overflow: visible;
   border-radius: inherit;
-  filter: drop-shadow(
-      0 0 calc(var(--beam-glow, 4) * 1px) var(--beam-color-from, #f97316)
-    )
-    drop-shadow(
-      0 0 calc(var(--beam-glow, 4) * 2px) var(--beam-color-to, #ec4899)
-    );
+  filter: drop-shadow(0 0 calc(var(--beam-glow, 4) * 1px) var(--beam-color-from, #f97316)) drop-shadow(0 0 calc(var(--beam-glow, 4) * 2px) var(--beam-color-to, #ec4899));
 }
 
 /* انیمیشن حرکت پرتو در پیرامون مستطیل */
@@ -139,8 +134,7 @@ main {
 }
 
 .border-beam--animated .beam-svg rect {
-  animation: beam-dash calc(var(--beam-duration, 4s) / var(--beam-speed, 1.5))
-    linear infinite;
+  animation: beam-dash calc(var(--beam-duration, 4s) / var(--beam-speed, 1.5)) linear infinite;
 }
 
 .bjs-powered-by {
@@ -166,33 +160,42 @@ main {
 
 /* BPMN Colors */
 /* Tasks */
-g.djs-element[data-element-id^="Activity_"] .djs-visual > rect {
-  fill: #eef2ff !important; /* indigo-50 */
-  stroke: #4338ca !important; /* indigo-700 */
+g.djs-element[data-element-id^="Activity_"] .djs-visual>rect {
+  fill: #eef2ff !important;
+  /* indigo-50 */
+  stroke: #4338ca !important;
+  /* indigo-700 */
   stroke-width: 2px !important;
 }
 
 /* Start Event */
-g.djs-element[data-element-id^="StartEvent"] .djs-visual > circle {
-  fill: #d1fae5 !important; /* emerald-100 */
-  stroke: #10b981 !important; /* emerald-500 */
+g.djs-element[data-element-id^="StartEvent"] .djs-visual>circle {
+  fill: #d1fae5 !important;
+  /* emerald-100 */
+  stroke: #10b981 !important;
+  /* emerald-500 */
   stroke-width: 2px !important;
 }
 
 /* End Event */
-g.djs-element[data-element-id^="EndEvent"] .djs-visual > circle {
-  fill: #fee2e2 !important; /* red-100 */
-  stroke: #ef4444 !important; /* red-500 */
+g.djs-element[data-element-id^="EndEvent"] .djs-visual>circle {
+  fill: #fee2e2 !important;
+  /* red-100 */
+  stroke: #ef4444 !important;
+  /* red-500 */
   stroke-width: 3px !important;
 }
 
 /* Gateways (exclusive) */
-g.djs-element[data-element-id^="Gateway_"] .djs-visual > path,
-g.djs-element[data-element-id^="Gateway_"] .djs-visual > polygon {
-  fill: #fffbeb !important; /* amber-50 */
-  stroke: #f59e0b !important; /* amber-500 */
+g.djs-element[data-element-id^="Gateway_"] .djs-visual>path,
+g.djs-element[data-element-id^="Gateway_"] .djs-visual>polygon {
+  fill: #fffbeb !important;
+  /* amber-50 */
+  stroke: #f59e0b !important;
+  /* amber-500 */
   stroke-width: 2px !important;
 }
+
 /* Inner marker (e.g., X of exclusive) */
 g.djs-element[data-element-id^="Gateway_"] .djs-visual path:nth-child(2) {
   stroke: #f59e0b !important;
@@ -200,14 +203,16 @@ g.djs-element[data-element-id^="Gateway_"] .djs-visual path:nth-child(2) {
 
 /* Sequence Flows and Arrowheads */
 g.djs-element.djs-connection .djs-visual path {
-  stroke: #64748b !important; /* slate-500 */
+  stroke: #64748b !important;
+  /* slate-500 */
   fill: #64748b !important;
   stroke-width: 2px !important;
 }
 
 /* Labels */
 .djs-label text {
-  fill: #1f2937 !important; /* gray-800 */
+  fill: #1f2937 !important;
+  /* gray-800 */
 }
 
 @media (max-width: 960px) {
@@ -218,8 +223,65 @@ g.djs-element.djs-connection .djs-visual path {
 }
 
 @media (max-width: 640px) {
+
   header,
   footer {
     padding: 1rem;
   }
+}
+
+/* Guided Tour */
+#tourRoot {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.tour-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(1px);
+  pointer-events: auto;
+}
+
+.tour-wrap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: auto;
+  direction: ltr;
+  /* ensure image appears on the left, panel on the right */
+}
+
+.tour-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  max-width: 520px;
+}
+
+.tour-panel p {
+  margin: 0 0 0.6rem 0;
+  line-height: 1.7;
+}
+
+.tour-panel button {
+  background: #1f4b99;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+}
+
+.tour-figure {
+  max-width: 220px;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: none;
 }
