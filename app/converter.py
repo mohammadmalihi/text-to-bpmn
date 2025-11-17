@@ -25,8 +25,9 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
     # Try to detect a simple branching scenario from the text (اگر ... باشد ... اما اگر ...)
     branch = _detect_branch(user_text)
+    multi_branch = None if branch else _detect_multi_branch(user_text)
 
-    if branch:
+    if branch or multi_branch:
         # Build a diagram with an exclusive gateway split and join
         process_elements: List[str] = [
             f'<bpmn:startEvent id="{start_id}" name="شروع"/>']
@@ -60,7 +61,7 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
         # Decision gateway
         split_id = "Gateway_Split_1"
-        question = branch["question"]
+        question = (branch or {}).get("question") or "تصمیم‌گیری"
         process_elements.append(
             f'<bpmn:exclusiveGateway id="{split_id}" name="{escape(question)}"/>'
         )
@@ -70,48 +71,86 @@ def convert_text_to_bpmn(user_text: str) -> str:
         node_rows[split_id] = 0
         nodes_order.append(split_id)
 
-        # Yes branch (top row)
-        yes_label = _format_label_with_role(branch["yes_action"])
-        yes_id = "Activity_Yes_1"
-        process_elements.append(
-            f'<bpmn:task id="{yes_id}" name="{escape(yes_label)}"/>')
-        node_types[yes_id] = "task"
-        node_columns[yes_id] = node_columns[split_id] + 1
-        node_rows[yes_id] = 0
-        nodes_order.append(yes_id)
-        label_lines_by_id[yes_id] = yes_label.count("\n") + 1
-
-        # No branch (bottom row)
-        no_label = _format_label_with_role(branch["no_action"])
-        no_id = "Activity_No_1"
-        process_elements.append(
-            f'<bpmn:task id="{no_id}" name="{escape(no_label)}"/>')
-        node_types[no_id] = "task"
-        node_columns[no_id] = node_columns[split_id] + 1
-        node_rows[no_id] = 1
-        nodes_order.append(no_id)
-        label_lines_by_id[no_id] = no_label.count("\n") + 1
-
-        # Optional follow-up on the "no" path
-        follow_id: Optional[str] = None
-        if branch.get("after_no_action"):
-            follow_label = _format_label_with_role(branch["after_no_action"])
-            follow_id = "Activity_No_2"
+        # Build branches
+        branch_start_ids: List[str] = []
+        branch_end_ids: List[str] = []
+        branch_internal_edges: List[Tuple[str, str]] = []
+        branch_levels: Dict[str, int] = {}
+        branch_rows: Dict[str, int] = {}
+        if branch:
+            # yes/no branches
+            yes_label = _format_label_with_role(branch["yes_action"])
+            yes_id = "Activity_Yes_1"
             process_elements.append(
-                f'<bpmn:task id="{follow_id}" name="{escape(follow_label)}"/>')
-            node_types[follow_id] = "task"
-            node_columns[follow_id] = node_columns[no_id] + 1
-            node_rows[follow_id] = 1
-            nodes_order.append(follow_id)
-            label_lines_by_id[follow_id] = follow_label.count("\n") + 1
+                f'<bpmn:task id="{yes_id}" name="{escape(yes_label)}"/>')
+            node_types[yes_id] = "task"
+            node_columns[yes_id] = node_columns[split_id] + 1
+            node_rows[yes_id] = 0
+            nodes_order.append(yes_id)
+            label_lines_by_id[yes_id] = yes_label.count("\n") + 1
+            branch_start_ids.append(yes_id)
+            branch_end_ids.append(yes_id)
+            branch_levels[yes_id] = node_columns[yes_id]
+            branch_rows[yes_id] = node_rows[yes_id]
+
+            no_label = _format_label_with_role(branch["no_action"])
+            no_id = "Activity_No_1"
+            process_elements.append(
+                f'<bpmn:task id="{no_id}" name="{escape(no_label)}"/>')
+            node_types[no_id] = "task"
+            node_columns[no_id] = node_columns[split_id] + 1
+            node_rows[no_id] = 1
+            nodes_order.append(no_id)
+            label_lines_by_id[no_id] = no_label.count("\n") + 1
+            branch_start_ids.append(no_id)
+            branch_end_ids.append(no_id)
+            branch_levels[no_id] = node_columns[no_id]
+            branch_rows[no_id] = node_rows[no_id]
+
+            # Optional follow-up on the "no" path
+            if branch.get("after_no_action"):
+                follow_label = _format_label_with_role(
+                    branch["after_no_action"])
+                follow_id = "Activity_No_2"
+                process_elements.append(
+                    f'<bpmn:task id="{follow_id}" name="{escape(follow_label)}"/>')
+                node_types[follow_id] = "task"
+                node_columns[follow_id] = node_columns[no_id] + 1
+                node_rows[follow_id] = 1
+                nodes_order.append(follow_id)
+                label_lines_by_id[follow_id] = follow_label.count("\n") + 1
+                # Update end node for 'no' branch (do not change its start)
+                branch_end_ids[-1] = follow_id
+                branch_levels[follow_id] = node_columns[follow_id]
+                branch_rows[follow_id] = node_rows[follow_id]
+                # Connect no -> follow
+                branch_internal_edges.append((no_id, follow_id))
+        else:
+            # Multi-branch detected
+            for idx, action in enumerate(multi_branch["branches"]):
+                label = _format_label_with_role(action)
+                node_id = f"Activity_B_{idx+1}"
+                process_elements.append(
+                    f'<bpmn:task id="{node_id}" name="{escape(label)}"/>')
+                node_types[node_id] = "task"
+                node_columns[node_id] = node_columns[split_id] + 1
+                node_rows[node_id] = idx
+                nodes_order.append(node_id)
+                label_lines_by_id[node_id] = label.count("\n") + 1
+                branch_start_ids.append(node_id)
+                branch_end_ids.append(node_id)
+                branch_levels[node_id] = node_columns[node_id]
+                branch_rows[node_id] = node_rows[node_id]
 
         # Join gateway
         join_id = "Gateway_Join_1"
         process_elements.append(
             f'<bpmn:exclusiveGateway id="{join_id}" name=""/>')
         node_types[join_id] = "gateway"
-        node_columns[join_id] = max(
-            node_columns[yes_id], node_columns.get(follow_id or no_id, 0)) + 1
+        # place join below the deepest branch level
+        max_level = max(branch_levels.values()) if branch_end_ids else node_columns.get(
+            split_id, 0)
+        node_columns[join_id] = max_level + 1
         node_rows[join_id] = 0
         nodes_order.append(join_id)
 
@@ -138,14 +177,15 @@ def convert_text_to_bpmn(user_text: str) -> str:
         if pre_task_ids:
             add_flow(pre_task_ids[-1], split_id)
 
-        add_flow(split_id, yes_id)
-        add_flow(split_id, no_id)
-        add_flow(yes_id, join_id)
-        if follow_id:
-            add_flow(no_id, follow_id)
-            add_flow(follow_id, join_id)
-        else:
-            add_flow(no_id, join_id)
+        # connect split to branch starts
+        for bid in branch_start_ids:
+            add_flow(split_id, bid)
+        # connect internal edges within branches (e.g., no -> follow)
+        for a, b in branch_internal_edges:
+            add_flow(a, b)
+        # connect each branch end to join
+        for bid in branch_end_ids:
+            add_flow(bid, join_id)
 
         add_flow(join_id, end_id)
 
@@ -245,7 +285,10 @@ def _extract_steps(user_text: str) -> List[str]:
     """
     Extract candidate steps from user text using simple heuristics.
     """
-    cleaned = re.sub(r"\s+", " ", user_text.strip())
+    # Drop trailing role summary sections like "در کل، فرایند شامل ..."
+    summary_cut = re.split(r"در\s+کل\s*،?\s*فرایند\s+شامل.*", user_text, flags=re.IGNORECASE | re.DOTALL)[0]
+
+    cleaned = re.sub(r"\s+", " ", summary_cut.strip())
     if not cleaned:
         return []
 
@@ -342,16 +385,30 @@ def _detect_branch(user_text: str) -> Optional[Dict[str, str]]:
             flags=re.IGNORECASE,
         )
         if not m_alt:
-            return None
-        condition = m_alt.group("cond").strip()
-        yes_action = m_alt.group("yes").strip()
-        no_action = m_alt.group("no").strip()
-        # Remainder after the matched alt pattern (follow-up for no-branch)
-        remainder = norm[m_alt.end():].strip()
-        after_no_action = ""
-        if remainder:
-            after_no_action = re.split(
-                r"[.;]", remainder, maxsplit=1)[0].strip()
+            # Paragraph style with colon after condition:
+            # "اگر <cond> : <yes> ...  اگر <cond2> : <no> ..."
+            m_par = re.search(
+                r"اگر\s+(?P<cond>[^:]+):\s*(?P<yes>.+?)\s*(?:اما|ولی)?\s*اگر\s+(?P<no_cond>[^:]+):\s*(?P<no>.+)",
+                user_text,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            if not m_par:
+                return None
+            condition = re.sub(r"\s+", " ", m_par.group("cond")).strip()
+            yes_action = re.sub(r"\s+", " ", m_par.group("yes")).strip()
+            no_action = re.sub(r"\s+", " ", m_par.group("no")).strip()
+            remainder = ""
+            after_no_action = ""
+        else:
+            condition = m_alt.group("cond").strip()
+            yes_action = m_alt.group("yes").strip()
+            no_action = m_alt.group("no").strip()
+            # Remainder after the matched alt pattern (follow-up for no-branch)
+            remainder = norm[m_alt.end():].strip()
+            after_no_action = ""
+            if remainder:
+                after_no_action = re.split(
+                    r"[.;]", remainder, maxsplit=1)[0].strip()
     else:
         condition = m.group("cond").strip()
         yes_action = m.group("yes").strip()
@@ -397,6 +454,29 @@ def _normalize_condition(text: str) -> str:
     return text
 
 
+def _detect_multi_branch(user_text: str) -> Optional[Dict[str, List[str]]]:
+    """
+    Detect multiple simple 'اگر ... بود/باشد ...' branches in a row.
+    Returns dict with 'question' and 'branches' (list of actions) if >=2 found.
+    """
+    text = re.sub(r"\s+", " ", user_text)
+    # Find all 'اگر <cond> (بود|باشد|است)? <action>' occurrences
+    pattern = re.compile(
+        r"اگر\s+(.+?)(?:\s+(?:بود|باشد|است))?\s*[:،,]?\s*(.+?)(?=(?:\s+(?:و\s+)?اگر\b)|$)",
+        re.IGNORECASE,
+    )
+    matches = pattern.findall(text)
+    if len(matches) < 2:
+        return None
+    actions: List[str] = []
+    for (_cond, action) in matches:
+        cleaned_action = action.strip()
+        # Trim trailing punctuation
+        cleaned_action = re.sub(r"[.؛]+$", "", cleaned_action)
+        actions.append(cleaned_action)
+    return {"question": "تصمیم‌گیری", "branches": actions}
+
+
 def _format_label_with_role(step: str) -> str:
     return _wrap_label(_label_with_role(step))
 
@@ -412,8 +492,11 @@ def _label_with_role(text: str) -> str:
     roles = [
         "کارشناس ارشد پشتیبانی ستاد",
         "کارشناس ارشد",
+        "کارشناس بررسی شکایت",
         "کارشناس پشتیبانی",
         "کارشناس شکایت ستاد",
+        "کارشناس ستاد",
+        "کارشناس اولیه",
         "کارشناس",
         "کارمند",
         "کاربر",
