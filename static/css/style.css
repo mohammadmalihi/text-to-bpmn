@@ -45,7 +45,7 @@ main {
     flex-direction: column;
     gap: 0.75rem;
     background: #fff;
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 1.5rem;
     box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
 }
@@ -88,7 +88,7 @@ main {
 
 .viewer {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 1rem;
     box-shadow: 0 10px 25px rgba(31, 73, 153, 0.08);
     min-height: 400px;
@@ -101,6 +101,45 @@ main {
     border: 1px dashed #d1d9ec;
     border-radius: 8px;
     background: #f5f7fb;
+}
+
+.border-beam {
+    position: relative;
+    border-radius: var(--beam-radius, 60px);
+    isolation: isolate;
+}
+
+.border-beam::before {
+    /* غیرفعال: از SVG برای حرکت دور سکشن استفاده می‌کنیم */
+    content: none;
+}
+
+/* لایه‌ی SVG که دور سکشن قرار می‌گیرد */
+.beam-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    border-radius: inherit;
+    filter:
+        drop-shadow(0 0 calc(var(--beam-glow, 4) * 1px) var(--beam-color-from, #f97316)) drop-shadow(0 0 calc(var(--beam-glow, 4) * 2px) var(--beam-color-to, #ec4899));
+}
+
+/* انیمیشن حرکت پرتو در پیرامون مستطیل */
+@keyframes beam-dash {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+
+.border-beam--animated .beam-svg rect {
+    animation: beam-dash calc(var(--beam-duration, 4s) / var(--beam-speed, 1.5)) linear infinite;
+}
+
+.bjs-powered-by {
+    display: none !important;
 }
 
 .djs-container,

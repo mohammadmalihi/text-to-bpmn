@@ -28,7 +28,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
     if branch:
         # Build a diagram with an exclusive gateway split and join
-        process_elements: List[str] = [f'<bpmn:startEvent id="{start_id}" name="شروع"/>']
+        process_elements: List[str] = [
+            f'<bpmn:startEvent id="{start_id}" name="شروع"/>']
 
         node_types: Dict[str, str] = {
             start_id: "start",
@@ -54,7 +55,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
             node_columns[node_id] = index + 1
             node_rows[node_id] = 0
             label_lines_by_id[node_id] = label.count("\n") + 1
-            process_elements.append(f'<bpmn:task id="{node_id}" name="{escape(label)}"/>')
+            process_elements.append(
+                f'<bpmn:task id="{node_id}" name="{escape(label)}"/>')
 
         # Decision gateway
         split_id = "Gateway_Split_1"
@@ -63,14 +65,16 @@ def convert_text_to_bpmn(user_text: str) -> str:
             f'<bpmn:exclusiveGateway id="{split_id}" name="{escape(question)}"/>'
         )
         node_types[split_id] = "gateway"
-        node_columns[split_id] = (node_columns.get(pre_task_ids[-1], 0) + 1) if pre_task_ids else 1
+        node_columns[split_id] = (node_columns.get(
+            pre_task_ids[-1], 0) + 1) if pre_task_ids else 1
         node_rows[split_id] = 0
         nodes_order.append(split_id)
 
         # Yes branch (top row)
         yes_label = _format_label_with_role(branch["yes_action"])
         yes_id = "Activity_Yes_1"
-        process_elements.append(f'<bpmn:task id="{yes_id}" name="{escape(yes_label)}"/>')
+        process_elements.append(
+            f'<bpmn:task id="{yes_id}" name="{escape(yes_label)}"/>')
         node_types[yes_id] = "task"
         node_columns[yes_id] = node_columns[split_id] + 1
         node_rows[yes_id] = 0
@@ -80,7 +84,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
         # No branch (bottom row)
         no_label = _format_label_with_role(branch["no_action"])
         no_id = "Activity_No_1"
-        process_elements.append(f'<bpmn:task id="{no_id}" name="{escape(no_label)}"/>')
+        process_elements.append(
+            f'<bpmn:task id="{no_id}" name="{escape(no_label)}"/>')
         node_types[no_id] = "task"
         node_columns[no_id] = node_columns[split_id] + 1
         node_rows[no_id] = 1
@@ -92,7 +97,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
         if branch.get("after_no_action"):
             follow_label = _format_label_with_role(branch["after_no_action"])
             follow_id = "Activity_No_2"
-            process_elements.append(f'<bpmn:task id="{follow_id}" name="{escape(follow_label)}"/>')
+            process_elements.append(
+                f'<bpmn:task id="{follow_id}" name="{escape(follow_label)}"/>')
             node_types[follow_id] = "task"
             node_columns[follow_id] = node_columns[no_id] + 1
             node_rows[follow_id] = 1
@@ -101,9 +107,11 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
         # Join gateway
         join_id = "Gateway_Join_1"
-        process_elements.append(f'<bpmn:exclusiveGateway id="{join_id}" name=""/>')
+        process_elements.append(
+            f'<bpmn:exclusiveGateway id="{join_id}" name=""/>')
         node_types[join_id] = "gateway"
-        node_columns[join_id] = max(node_columns[yes_id], node_columns.get(follow_id or no_id, 0)) + 1
+        node_columns[join_id] = max(
+            node_columns[yes_id], node_columns.get(follow_id or no_id, 0)) + 1
         node_rows[join_id] = 0
         nodes_order.append(join_id)
 
@@ -116,6 +124,7 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
         # Flows
         flow_index = 1
+
         def add_flow(src: str, dst: str):
             nonlocal flow_index
             fid = f"Flow_{flow_index}"
@@ -179,7 +188,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
     else:
         # Fallback: simple linear diagram
         wrapped_steps = [_format_label_with_role(step) for step in steps]
-        task_ids = [f"Activity_{index+1}" for index in range(len(wrapped_steps))]
+        task_ids = [
+            f"Activity_{index+1}" for index in range(len(wrapped_steps))]
         flow_ids = [f"Flow_{index+1}" for index in range(len(steps) + 1)]
 
         process_elements = [
@@ -207,7 +217,8 @@ def convert_text_to_bpmn(user_text: str) -> str:
 
         process_xml = "\n      ".join(process_elements + sequence_flows)
 
-        shapes_xml, edges_xml = _build_diagrams(all_nodes, flow_ids, label_lines_by_id)
+        shapes_xml, edges_xml = _build_diagrams(
+            all_nodes, flow_ids, label_lines_by_id)
 
         return f"""<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -261,7 +272,7 @@ def _extract_steps(user_text: str) -> List[str]:
         r"\b(includes|consists of|comprises|شامل|متشکل از)\b", cleaned, re.IGNORECASE
     )
     if headline_match:
-        cleaned = cleaned[headline_match.end() :].strip(" :،,")
+        cleaned = cleaned[headline_match.end():].strip(" :،,")
 
     normalized = cleaned
     for connector in connectors:
@@ -299,6 +310,7 @@ def _extract_steps(user_text: str) -> List[str]:
 
     return steps
 
+
 def _detect_branch(user_text: str) -> Optional[Dict[str, str]]:
     """
     Detect a simple Persian branching structure like:
@@ -335,18 +347,20 @@ def _detect_branch(user_text: str) -> Optional[Dict[str, str]]:
         yes_action = m_alt.group("yes").strip()
         no_action = m_alt.group("no").strip()
         # Remainder after the matched alt pattern (follow-up for no-branch)
-        remainder = norm[m_alt.end() :].strip()
+        remainder = norm[m_alt.end():].strip()
         after_no_action = ""
         if remainder:
-            after_no_action = re.split(r"[.;]", remainder, maxsplit=1)[0].strip()
+            after_no_action = re.split(
+                r"[.;]", remainder, maxsplit=1)[0].strip()
     else:
         condition = m.group("cond").strip()
         yes_action = m.group("yes").strip()
         no_action = m.group("no_clause").strip()
-        remainder = norm[m.end() :].strip()
+        remainder = norm[m.end():].strip()
         after_no_action = ""
         if remainder:
-            after_no_action = re.split(r"[.;]", remainder, maxsplit=1)[0].strip()
+            after_no_action = re.split(
+                r"[.;]", remainder, maxsplit=1)[0].strip()
 
     question = _normalize_condition(condition)
 
@@ -371,6 +385,7 @@ def _detect_branch(user_text: str) -> Optional[Dict[str, str]]:
         result["after_no_action"] = after_no_action
     return result
 
+
 def _normalize_condition(text: str) -> str:
     text = text.strip()
     # For Persian: turn 'قابل پاسخ گویی' into 'قابل پاسخ‌گویی؟'
@@ -381,11 +396,14 @@ def _normalize_condition(text: str) -> str:
         text = f"{text}؟"
     return text
 
+
 def _format_label_with_role(step: str) -> str:
     return _wrap_label(_label_with_role(step))
 
+
 def _format_label_with_role_direct(action: str) -> str:
     return _wrap_label(_label_with_role(action))
+
 
 def _label_with_role(text: str) -> str:
     """
@@ -407,11 +425,13 @@ def _label_with_role(text: str) -> str:
             text = text.replace(role, "")
             break
     # Remove generic prefaces like 'فرایند ... به شرح زیر میباشد'
-    text = re.sub(r"فرایند.+?(?:به شرح (?:ذیل|زیر) (?:میباشد|است)?:?)", "", text)
+    text = re.sub(
+        r"فرایند.+?(?:به شرح (?:ذیل|زیر) (?:میباشد|است)?:?)", "", text)
     action = text.strip(" :،,-")
     if role_found:
         return f"{role_found}\n—\n{action}"
     return action
+
 
 def _wrap_label(text: str, max_chars: int = 24) -> str:
     """
@@ -564,5 +584,3 @@ def _build_diagrams_complex(
         )
 
     return "\n      ".join(shapes), "\n      ".join(edges_xml)
-
-
